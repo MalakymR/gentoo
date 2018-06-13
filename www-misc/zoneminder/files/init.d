@@ -4,7 +4,7 @@
 
 depend() {
 	need mysql
-	need apache2
+	want apache2
 }
 
 start_pre() {

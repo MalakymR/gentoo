@@ -1,4 +1,4 @@
-# Copyright 1999-2017 Gentoo Foundation
+# Copyright 1999-2018 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 
 # TO DO:
@@ -16,18 +16,13 @@ EAPI=6
 inherit versionator perl-functions readme.gentoo-r1 cmake-utils depend.apache flag-o-matic systemd
 
 if [[ ${PV} == 9999 ]] ; then
-	inherit git-r3
-
 	MY_PN="${PN}"
-	EGIT_REPO_URI="https://github.com/ZoneMinder/ZoneMinder/${PN}.git"
-
+	inherit git-r3
+	EGIT_REPO_URI="https://github.com/${PN}/${PN}.git"
 	KEYWORDS=""
 else
-	# releases use medial capitals inside compressed archive
-	MY_PN="ZoneMinder"
+	MY_PN="${PN}"
 	MY_CRUD_VERSION="3.1.0"
-
-	#test with PN in URL as github doesnt care about caps
 	SRC_URI="
 		https://github.com/${PN}/${PN}/archive/${PV}.tar.gz -> ${P}.tar.gz
 		https://github.com/FriendsOfCake/crud/archive/v${MY_CRUD_VERSION}.tar.gz -> Crud-${MY_CRUD_VERSION}.tar.gz
@@ -95,10 +90,11 @@ RDEPEND="${DEPEND}"
 # webserver in global scope (/etc/zm.conf etc), so we hardcode apache here.
 need_apache
 
-# MY_PN shows ZoneMinder as extracted folder has uppercase letters (what about git?)
+# MY_PN shows ZoneMinder because extracted folder has uppercase letters (same for git-9999)
 S=${WORKDIR}/${MY_PN}-${PV}
 
 MY_ZM_WEBDIR=/usr/share/zoneminder/www
+MY_ZM_CACHEDIR=/var/cache/zoneminder
 
 src_prepare() {
 	cmake-utils_src_prepare
@@ -130,6 +126,7 @@ src_configure() {
 		-DHAVE_GCRYPT="$(usex gcrypt ON OFF)"
 		-DZM_PATH_ZMS=/zm/cgi-bin/nph-zms
 		-DZM_CONFIG_DIR=/etc/zm #new folder #default seems to be /etc which clashes when it installs /etc/.../conf.d/*
+		-DZM_CACHEDIR=${MY_ZM_CACHEDIR}
 	)
 
 	cmake-utils_src_configure
@@ -160,12 +157,15 @@ src_install() {
 
 	# bug 523058 # TODO check remove this bug fix
 	keepdir ${MY_ZM_WEBDIR}/temp
-	fowners -R apache:apache ${MY_ZM_WEBDIR}/temp
+	fowners -R apache:apache ${MY_ZM_WEBDIR}
+
+	keepdir ${MY_ZM_CACHEDIR}
+	fowners -R apache:apache ${MY_ZM_CACHEDIR}
 
 	# the configuration file
 	if [[ ${PV} != 9999 ]] ; then
-		fperms 0640 /etc/zm.conf
-		fowners root:apache /etc/zm.conf
+		fperms 0640 /etc/zm/
+		fowners root:apache /etc/zm
 	else
 		fperms 0640 /etc/zm/zm.conf
 		fowners root:apache /etc/zm/zm.conf
@@ -181,6 +181,7 @@ src_install() {
 	# copy vhost config to example folder
 	cp "${FILESDIR}"/10_zoneminder.conf "${T}"/10_zoneminder.conf || die
 	sed -i "${T}"/10_zoneminder.conf -e "s:%ZM_WEBDIR%:${MY_ZM_WEBDIR}:g" || die
+	sed -i "${T}"/10_zoneminder.conf -e "s:%ZM_CACHEDIR%:${MY_ZM_CACHEDIR}:g" || die
 
 	# TODO consider removing old symlinks from webroot (images, events)
 	# these pose a security risk as there was no security on these folders http://seclists.org/fulldisclosure/2017/Feb/11
