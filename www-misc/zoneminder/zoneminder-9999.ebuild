@@ -61,6 +61,7 @@ DEPEND="
 	dev-perl/libwww-perl
 	dev-perl/Sys-CpuLoad
 	dev-perl/Format-Human-Bytes
+	dev-perl/Number-Bytes-Human
 	dev-perl/File-Slurp
 	dev-php/pecl-apcu:*
 	sys-auth/polkit
