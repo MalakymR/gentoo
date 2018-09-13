@@ -3,8 +3,8 @@
 
 # TO DO:
 # * dependencies of unknown status:
-#	dev-perl/Device-SerialPort
-#	dev-perl/MIME-Lite
+#	dev-perl/Device-SerialPort #likely to connect to X10 device
+#	dev-perl/MIME-Lite #required for zmfilter
 #	dev-perl/MIME-tools
 #	dev-perl/PHP-Serialization
 #	virtual/perl-Archive-Tar
@@ -63,6 +63,10 @@ DEPEND="
 	dev-perl/Format-Human-Bytes
 	dev-perl/Number-Bytes-Human
 	dev-perl/File-Slurp
+	dev-perl/MIME-Lite
+	dev-perl/MIME-tools
+	dev-perl/PHP-Serialization
+	dev-perl/Device-SerialPort
 	dev-php/pecl-apcu:*
 	sys-auth/polkit
 	sys-libs/zlib
@@ -74,6 +78,9 @@ DEPEND="
 	virtual/perl-Getopt-Long
 	virtual/perl-Sys-Syslog
 	virtual/perl-Time-HiRes
+	virtual/perl-Archive-Tar
+	virtual/perl-libnet
+	virtual/perl-Module-Load
 	www-servers/apache
 	curl? ( net-misc/curl )
 	gcrypt? ( dev-libs/libgcrypt:0= )
